@@ -1,0 +1,13 @@
+SELECT b.internal_ref_code , b."name" AS branch_name , rest."name" AS restaurant_name , to_char(po.due_date,'yyyy-mm-dd') AS tax_inv_date , po.mkp_invoice AS tax_inv_no , 
+po.vat_amount AS vat_amount , po.non_vat_amount AS non_vat_amount, po.delivery_fee AS delivery_fee, po.discount_amount AS discount_amount , po.total_amount AS total_amount , 
+po.vatable_amount+po.delivery_fee AS tax_include ,
+to_char(po.payment_date,'yyyy-mm-dd') as payment_date
+FROM tbl_inventory_po AS po
+LEFT JOIN tbl_branch AS b ON po.branch_id = b.branch_id
+LEFT JOIN tbl_restaurant AS rest ON b.restaurant_id = rest.restaurant_id
+WHERE po.po_status = 12 
+AND po.delete_flag = 0
+AND b.delete_flag = 0
+AND po.market_place_flag = 1
+AND b.name not in ('Test%','test','Demo Market - PO') and lower(b.name) not like '%test%'
+AND rest.name not like 'Tum Hai%'
