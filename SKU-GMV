@@ -1,0 +1,29 @@
+วิธีคำนวณหาค่า GMV 
+GMV = product_price*quantity
+ใช้ CASE WHEN ในการคำนวณหาค่า vat โดยที่ vat = 1.07
+
+SELECT ที่ mkp_product_master.product_name
+SKU = product_name
+
+complete version (use sub query)
+SELECT uuid , ref_code , rest_name , branch_name , SKU , GMV , quantity , due
+FROM (SELECT branch.internal_ref_code AS ref_code, rest."name" AS rest_name , branch."name" AS branch_name ,  pro_mas.product_name_th AS SKU , 
+    CASE WHEN po_map.vat_flag = 1 THEN (po_map.product_price * po_map.product_quantity) * 1.07 
+    ELSE (po_map.product_price * po_map.product_quantity) 
+    END AS GMV , po_map.product_quantity AS quantity, mpo.due_date AS due , po.create_dt AS create , po_map.id , branch.internal_ref_code || ' ' || pro_mas.mkp_product_master_code || ' ' || po.create_dt AS uuid
+    FROM tbl_inventory_po AS po
+    LEFT JOIN tbl_branch AS branch ON branch.branch_id = po.branch_id
+    LEFT JOIN tbl_restaurant AS rest ON rest.restaurant_id = branch.restaurant_id
+    LEFT JOIN mkp_inventory_sub_po AS mpo ON mpo.master_po_id = po.id
+    LEFT JOIN mkp_product_inventory_po_map AS po_map ON po_map.mkp_sub_po_id = mpo.mkp_sub_po_id
+    LEFT JOIN mkp_product AS pro ON pro.mkp_product_id = po_map.mkp_product_id
+    JOIN mkp_product_master AS pro_mas ON pro_mas.mkp_product_master_code = pro.product_code
+    WHERE to_char(po.create_dt,'YYYY-MM') LIKE '2021-12'
+    AND po.market_place_flag = 1
+    AND branch.verify_type != 2
+    AND po.delete_flag = 0
+    AND branch.delete_flag = 0
+    AND po.po_status Not IN (2,3,5,100,101,102) 
+    AND mpo.po_status Not IN (2,3,5,100,101,102)
+    AND branch.name not in ('Test%','test','Demo Market - PO') and lower(branch.name) not like '%test%'
+    and rest.name not like 'Tum Hai%') AS a;
