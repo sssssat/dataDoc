@@ -8,3 +8,4 @@ GMV = product_price*quantity
 SELECT ที่ mkp_product_master.product_name
 SKU = product_name
 
+วิธีคำนวณ current month , last month สำหรับ compare  
